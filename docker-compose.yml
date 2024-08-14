@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+  freepbx:
+    build:
+      context: .
+      dockerfile: Dockerfile.freepbx
+    ports:
+      - "80:80"
+      - "443:443"
+      - "5060:5060"
+      - "5061:5061"
+      - "10000-20000:10000-20000/udp"
+      - "5038:5038"
+      - "9100:9100"
+    volumes:
+      - freepbx-data:/var/lib/asterisk
+      - freepbx-log:/var/log/asterisk
+      - freepbx-spool:/var/spool/asterisk
+      - freepbx-www:/var/www/html
+    environment:
+      - ASTERISK_UID=1000
+      - ASTERISK_GID=1000
+
+  prometheus:
+    build:
+      context: .
+      dockerfile: Dockerfile.prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus-data:/prometheus
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+
+volumes:
+  freepbx-data:
+  freepbx-log:
+  freepbx-spool:
+  freepbx-www:
+  prometheus-data:
+  grafana-data:

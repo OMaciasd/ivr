@@ -1,0 +1,39 @@
+FROM centos:7
+
+# Instalar dependencias
+RUN yum -y update && yum -y install \
+    epel-release \
+    wget \
+    git \
+    net-tools \
+    tar \
+    sudo \
+    initscripts \
+    firewalld \
+    which \
+    iproute
+
+# Instalar Node Exporter
+RUN cd /usr/local/bin && \
+    wget https://github.com/prometheus/node_exporter/releases/download/v1.3.1/node_exporter-1.3.1.linux-amd64.tar.gz && \
+    tar xvfz node_exporter-1.3.1.linux-amd64.tar.gz && \
+    mv node_exporter-1.3.1.linux-amd64/node_exporter . && \
+    rm -rf node_exporter-1.3.1.linux-amd64 node_exporter-1.3.1.linux-amd64.tar.gz
+
+# Crear usuario para Node Exporter
+RUN useradd --no-create-home --shell /bin/false node_exporter && \
+    chown node_exporter:node_exporter /usr/local/bin/node_exporter
+
+# Añadir FreePBX y Asterisk (simplificado)
+# Para una configuración completa, sigue los pasos oficiales de instalación
+# de FreePBX y Asterisk.
+
+# Configurar servicios
+COPY freepbx-node-exporter.sh /usr/local/bin/freepbx-node-exporter.sh
+RUN chmod +x /usr/local/bin/freepbx-node-exporter.sh
+
+# Exponer puertos necesarios
+EXPOSE 80 443 5060 5061 10000-20000/udp 5038 9100
+
+# Comando de inicio
+CMD ["/usr/local/bin/freepbx-node-exporter.sh"]
